@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر الأضواء المتوهجة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* الخطوط الأساسية */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+        /* المتغيرات (لألوان البنفسجي المتوهج) */
+        :root {
+            --primary-purple: #8A2BE2; /* Blue Violet */
+            --secondary-purple: #9370DB; /* Medium Purple */
+            --accent-purple: #BA55D3; /* Medium Orchid */
+            --glow-color: #EE82EE; /* Violet */
+            --dark-bg: #1A0033; /* خلفية داكنة جداً */
+            --light-text: #F0F0F0;
+            --dark-text: #333;
+            --button-hover: #A020F0; /* Purple */
+        }
+
+        /* إعادة تعيين الأنماط الأساسية */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            direction: rtl; /* لغة عربية */
+            text-align: right; /* لغة عربية */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px 0;
+        }
+
+        a {
+            color: var(--accent-purple);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--glow-color);
+            text-shadow: 0 0 8px var(--glow-color);
+        }
+
+        /* الرأس (Header) */
+        header {
+            background: var(--primary-purple);
+            color: var(--light-text);
+            padding: 1rem 0;
+            border-bottom: 3px solid var(--glow-color);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        header h1 {
+            float: right;
+            margin: 0;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px var(--glow-color);
+        }
+
+        header nav {
+            float: left;
+            margin-top: 10px;
+        }
+
+        header ul {
+            list-style: none;
+        }
+
+        header ul li {
+            display: inline;
+            padding: 0 15px;
+        }
+
+        header nav a {
+            color: var(--light-text);
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        header nav a:hover {
+            color: var(--glow-color);
+            text-shadow: 0 0 10px var(--glow-color);
+        }
+
+        /* قسم البطل (Hero Section) */
+        .hero-section {
+            background: linear-gradient(45deg, var(--dark-bg) 0%, var(--primary-purple) 100%);
+            color: var(--light-text);
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-bottom: 3px solid var(--glow-color);
+            box-shadow: 0 0 20px rgba(var(--glow-color), 0.5);
+        }
+
+        .hero-section h2 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px var(--glow-color);
+        }
+
+        .hero-section p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--accent-purple);
+            color: var(--light-text);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(var(--accent-purple), 0.7);
+        }
+
+        .btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px var(--glow-color);
+        }
+
+        /* قسم المنتجات */
+        .products-section {
+            padding: 60px 0;
+            background-color: var(--dark-bg);
+        }
+
+        .products-section h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 50px;
+            color: var(--light-text);
+            text-shadow: 0 0 12px var(--glow-color);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: linear-gradient(135deg, #2A0050 0%, var(--primary-purple) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(var(--glow-color), 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--secondary-purple);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 30px var(--glow-color);
+        }
+
+        .product-card img {
+            max-width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid var(--glow-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+
+        .product-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--light-text);
+            text-shadow: 0 0 5px var(--glow-color);
+        }
+
+        .product-card p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .product-card .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--glow-color);
+            display: block;
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px var(--glow-color);
+        }
+
+        .add-to-cart-btn {
+            background: var(--secondary-purple);
+            color: var(--light-text);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px rgba(var(--secondary-purple), 0.7);
+        }
+
+        .add-to-cart-btn:hover {
+            background: var(--button-hover);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        /* التذييل (Footer) */
+        footer {
+            background: var(--primary-purple);
+            color: var(--light-text);
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            border-top: 3px solid var(--glow-color);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        footer p {
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .social-links a {
+            color: var(--light-text);
+            margin: 0 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--glow-color);
+            text-shadow: 0 0 10px var(--glow-color);
+        }
+
+        /* استجابة للتصميم (Responsive Design) */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+                float: none;
+                text-align: center;
+            }
+
+            header nav {
+                float: none;
+                text-align: center;
+                margin-top: 15px;
+            }
+
+            header ul li {
+                display: block;
+                padding: 8px 0;
+            }
+
+            .hero-section h2 {
+                font-size: 2.5rem;
+            }
+
+            .hero-section p {
+                font-size: 1.1rem;
+            }
+
+            .product-grid {
+                grid-template-columns: 1fr; /* عمود واحد على الشاشات الصغيرة */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-section h2 {
+                font-size: 2rem;
+            }
+
+            .hero-section p {
+                font-size: 1rem;
+            }
+
+            .products-section h2 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>متجر الأضواء المتوهجة</h1>
+            <nav>
+                <ul>
+                    <li><a href="#home">الرئيسية</a></li>
+                    <li><a href="#products">المنتجات</a></li>
+                    <li><a href="#about">عنا</a></li>
+                    <li><a href="#contact">اتصل بنا</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero" class="hero-section">
+            <div class="container">
+                <h2>اكتشف عالمًا من الأناقة والتألق</h2>
+                <p>منتجات فريدة تضيء حياتك بلمسة من السحر.</p>
+                <a href="#products" class="btn">تسوق الآن</a>
+            </div>
+        </section>
+
+        <section id="products" class="products-section">
+            <div class="container">
+                <h2>منتجاتنا المميزة</h2>
+                <div class="product-grid">
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/250x200/8A2BE2/FFFFFF?text=منتج+1" alt="منتج 1">
+                        <h3>قلادة الأثير المتوهجة</h3>
+                        <p>قلادة أنيقة بتصميم فريد يضيء في الظلام.</p>
+                        <span class="price">150 ر.س</span>
+                        <button class="add-to-cart-btn">أضف للسلة</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/250x200/9370DB/FFFFFF?text=منتج+2" alt="منتج 2">
+                        <h3>سماعات الرأس البنفسجية</h3>
+                        <p>صوت نقي وتصميم عصري بلون بنفسجي جذاب.</p>
+                        <span class="price">300 ر.س</span>
+                        <button class="add-to-cart-btn">أضف للسلة</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/250x200/BA55D3/FFFFFF?text=منتج+3" alt="منتج 3">
+                        <h3>مصباح الطاولة الساحر</h3>
+                        <p>يضيف لمسة من السحر والإضاءة الهادئة لغرفتك.</p>
+                        <span class="price">220 ر.س</span>
+                        <button class="add-to-cart-btn">أضف للسلة</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/250x200/DA70D6/FFFFFF?text=منتج+4" alt="منتج 4">
+                        <h3>ساعة اليد المتألقة</h3>
+                        <p>ساعة يد عصرية بتصميم متألق ولون بنفسجي.</p>
+                        <span class="price">450 ر.س</span>
+                        <button class="add-to-cart-btn">أضف للسلة</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 متجر الأضواء المتوهجة. جميع الحقوق محفوظة.</p>
+            <div class="social-links">
+                <a href="#">فيسبوك</a>
+                <a href="#">تويتر</a>
+                <a href="#">إنستغرام</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
