@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر النجوم المتوهجة - Glow Star Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* الخطوط */
+        body {
+            font-family: 'Cairo', sans-serif; /* خط عربي أنيق */
+            margin: 0;
+            padding: 0;
+            background-color: #0d0d1a; /* خلفية داكنة جداً */
+            color: #e0e0f0; /* لون نص فاتح */
+            line-height: 1.6;
+            direction: rtl; /* اتجاه النص من اليمين لليسار */
+        }
+
+        /* الألوان الرئيسية */
+        :root {
+            --primary-color: #8A2BE2; /* بنفسجي متوهج (Blue Violet) */
+            --secondary-color: #FF69B4; /* وردي فاتح (Hot Pink) */
+            --accent-color: #00FFFF; /* أزرق سماوي (Cyan) */
+            --dark-bg: #0d0d1a;
+            --light-text: #e0e0f0;
+            --gradient-glow: linear-gradient(45deg, #8A2BE2, #FF69B4, #00FFFF);
+        }
+
+        /* تأثيرات التوهج */
+        .glow-text {
+            text-shadow: 0 0 8px var(--primary-color), 0 0 15px var(--secondary-color);
+        }
+
+        .glow-button {
+            box-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--secondary-color);
+        }
+
+        /* التخطيط العام */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* الرأس (Header) */
+        header {
+            background-color: rgba(13, 13, 26, 0.8); /* خلفية شبه شفافة */
+            padding: 15px 0;
+            border-bottom: 2px solid var(--primary-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px); /* تأثير ضبابي */
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif; /* خط مستقبلي للشعار */
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--light-text);
+            text-decoration: none;
+            background: var(--gradient-glow);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse-logo 3s infinite alternate;
+        }
+
+        @keyframes pulse-logo {
+            0% { text-shadow: 0 0 5px var(--primary-color); }
+            100% { text-shadow: 0 0 15px var(--secondary-color), 0 0 25px var(--accent-color); }
+        }
+
+        .nav-links {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .nav-links li {
+            margin-right: 25px; /* مسافة بين عناصر القائمة */
+        }
+
+        .nav-links a {
+            color: var(--light-text);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+            text-shadow: 0 0 8px var(--accent-color);
+        }
+
+        /* القسم الرئيسي (Hero Section) */
+        .hero {
+            background: url('https://via.placeholder.com/1500x800/0d0d1a/8A2BE2?text=Glow+Star+Store') no-repeat center center/cover; /* صورة خلفية */
+            min-height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6); /* طبقة داكنة فوق الصورة */
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: var(--light-text);
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4em;
+            margin-bottom: 20px;
+            background: var(--gradient-glow);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: neon-glow 2s infinite alternate;
+        }
+
+        @keyframes neon-glow {
+            0% { text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--secondary-color); }
+            100% { text-shadow: 0 0 20px var(--primary-color), 0 0 30px var(--secondary-color), 0 0 40px var(--accent-color); }
+        }
+
+        .hero p {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: var(--light-text);
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px var(--secondary-color), 0 0 25px var(--accent-color);
+        }
+
+        /* قسم المنتجات */
+        .products {
+            padding: 80px 0;
+            background-color: var(--dark-bg);
+            text-align: center;
+        }
+
+        .products h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
+            margin-bottom: 50px;
+            background: var(--gradient-glow);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse-text 2s infinite alternate;
+        }
+
+        @keyframes pulse-text {
+            0% { text-shadow: 0 0 5px var(--primary-color); }
+            100% { text-shadow: 0 0 10px var(--secondary-color), 0 0 15px var(--accent-color); }
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .product-card {
+            background-color: #1a1a2e; /* خلفية داكنة للبطاقة */
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(138, 43, 226, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--primary-color);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px var(--accent-color), 0 0 40px var(--secondary-color);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .product-info {
+            padding: 25px;
+            text-align: right;
+        }
+
+        .product-info h3 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+            text-shadow: 0 0 5px var(--accent-color);
+        }
+
+        .product-info p {
+            font-size: 1.1em;
+            color: #cccccc;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6em;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px var(--secondary-color);
+        }
+
+        /* التذييل (Footer) */
+        footer {
+            background-color: #1a1a2e;
+            color: #cccccc;
+            padding: 40px 0;
+            text-align: center;
+            border-top: 2px solid var(--primary-color);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            margin: 20px;
+            text-align: right;
+        }
+
+        .footer-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5em;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px var(--accent-color);
+        }
+
+        .footer-section p, .footer-section ul {
+            font-size: 1em;
+            color: #b0b0b0;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul li a {
+            color: #b0b0b0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: var(--secondary-color);
+            text-shadow: 0 0 5px var(--secondary-color);
+        }
+
+        .social-icons a {
+            color: var(--light-text);
+            font-size: 1.8em;
+            margin: 0 10px;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            color: var(--secondary-color);
+            transform: scale(1.2);
+        }
+
+        .footer-bottom {
+            margin-top: 20px;
+            border-top: 1px solid rgba(138, 43, 226, 0.3);
+            padding-top: 20px;
+            font-size: 0.9em;
+            color: #888888;
+        }
+
+        /* استجابة للتصميم (Responsive Design) */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+            .nav-links {
+                margin-top: 15px;
+                flex-direction: column;
+                align-items: flex-end;
+            }
+            .nav-links li {
+                margin: 10px 0;
+            }
+            .hero h1 {
+                font-size: 3em;
+            }
+            .hero p {
+                font-size: 1.2em;
+            }
+            .products h2 {
+                font-size: 2.5em;
+            }
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+            .footer-content {
+                flex-direction: column;
+                align-items: center;
+            }
+            .footer-section {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 2em;
+            }
+            .hero h1 {
+                font-size: 2.5em;
+            }
+            .hero p {
+                font-size: 1em;
+            }
+            .btn {
+                padding: 12px 25px;
+                font-size: 1em;
+            }
+            .products h2 {
+                font-size: 2em;
+            }
+            .product-info h3 {
+                font-size: 1.5em;
+            }
+            .price {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+    <!-- أيقونات Font Awesome للشبكات الاجتماعية -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <a href="#" class="logo">متجر النجوم</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#home">الرئيسية</a></li>
+                    <li><a href="#products">المنتجات</a></li>
+                    <li><a href="#about">عنا</a></li>
+                    <li><a href="#contact">اتصل بنا</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1 class="glow-text">اكتشف عالمًا من المنتجات المتوهجة!</h1>
+                <p>نقدم لك أحدث وأجمل المنتجات التي تضيء حياتك بلمسة من السحر.</p>
+                <a href="#products" class="btn glow-button">تسوق الآن</a>
+            </div>
+        </section>
+
+        <section id="products" class="products">
+            <div class="container">
+                <h2 class="glow-text">منتجاتنا المتوهجة</h2>
+                <div class="product-grid">
+                    <!-- المنتج 1 -->
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/400x250/8A2BE2/FFFFFF?text=منتج+1" alt="منتج متوهج 1">
+                        <div class="product-info">
+                            <h3>سماعات الأذن المتوهجة</h3>
+                            <p>تجربة صوتية فريدة مع إضاءة LED مبهرة. متوفرة بألوان متعددة.</p>
+                            <div class="price">199.99 ريال</div>
+                            <a href="#" class="btn">أضف للسلة</a>
+                        </div>
+                    </div>
+                    <!-- المنتج 2 -->
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/400x250/FF69B4/FFFFFF?text=منتج+2" alt="منتج متوهج 2">
+                        <div class="product-info">
+                            <h3>ساعة اليد الذكية المضيئة</h3>
+                            <p>تصميم عصري وميزات ذكية مع شاشة متوهجة تضيء معصمك.</p>
+                            <div class="price">349.00 ريال</div>
+                            <a href="#" class="btn">أضف للسلة</a>
+                        </div>
+                    </div>
+                    <!-- المنتج 3 -->
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/400x250/00FFFF/FFFFFF?text=منتج+3" alt="منتج متوهج 3">
+                        <div class="product-info">
+                            <h3>لوحة مفاتيح الألعاب المتوهجة</h3>
+                            <p>تجربة لعب غامرة مع إضاءة RGB قابلة للتخصيص ومفاتيح ميكانيكية.</p>
+                            <div class="price">289.50 ريال</div>
+                            <a href="#" class="btn">أضف للسلة</a>
+                        </div>
+                    </div>
+                    <!-- المنتج 4 -->
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/400x250/8A2BE2/FFFFFF?text=منتج+4" alt="منتج متوهج 4">
+                        <div class="product-info">
+                            <h3>ماوس الألعاب اللاسلكي</h3>
+                            <p>دقة عالية وتصميم مريح مع إضاءة خلفية أنيقة.</p>
+                            <div class="price">125.00 ريال</div>
+                            <a href="#" class="btn">أضف للسلة</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section" id="about">
+                    <h3>عن متجر النجوم</h3>
+                    <p>نحن نقدم أحدث المنتجات التقنية والإكسسوارات العصرية التي تتميز بتصاميمها المتوهجة والجذابة. هدفنا هو إضفاء لمسة من السحر على حياتك اليومية.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul>
+                        <li><a href="#home">الرئيسية</a></li>
+                        <li><a href="#products">المنتجات</a></li>
+                        <li><a href="#">المدونة</a></li>
+                        <li><a href="#">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section" id="contact">
+                    <h3>تواصل معنا</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 شارع النجوم المتوهجة، مدينة السحر، 12345</p>
+                    <p><i class="fas fa-phone"></i> +966 50 123 4567</p>
+                    <p><i class="fas fa-envelope"></i> info@glowstarstore.com</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-snapchat-ghost"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 متجر النجوم المتوهجة. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
